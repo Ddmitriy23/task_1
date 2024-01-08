@@ -4,7 +4,25 @@
     <script src="https://pixijs.download/release/pixi.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
 </head>
+<button>Погнали!</button>
+<canvas></canvas>
   <body>
+    
+    <script>
+		let canvas = document.querySelector ('canvas')
+        concole.log(canvas)
+           canvas.style.display = 'none' 
+        
+        let button = document.querySelector('button')
+		console.log(button)
+		 button.onclick = function () {
+		  console.log("кнопка нажата")
+          canvas.file.display = 'initial'
+		   
+		
+        }
+        </script>
+
     <script>
         let socket = io("ws://213.171.9.221:1111", {
             transports: [
@@ -12,7 +30,6 @@
             ],
             reconnectionDelayMax: 10000,
         })
-        // console.log(socket)
         socket.on('connect', () => {
             console.log('connected')
         })
@@ -20,22 +37,34 @@
             console.log(message)
         })
 
+        socket.on('player:online', players => {
+            console.log(players)
+            if (app.stage.children[0]) {
+                while(app.stage.children[0]) {
+                    app.stage.removeChild(app.stage.children[0]);
+                }
+            }
+            players.map(player => {
+                let sprite = PIXI.Sprite.from('https://cdn-icons-png.flaticon.com/512/6166/6166814.png');
+                sprite.scale.set(0.3, 0.3);
+                sprite.x = player.x;
+                sprite.y = player.y;
+                app.stage.addChild(sprite);
+            })
+        })
 
 
-      // Create the application helper and add its render target to the page
       let app = new PIXI.Application({ width: 1420, height: 720 });
       document.body.appendChild(app.view);
 
-      // Create the sprite and add it to the stage
-      let sprite = PIXI.Sprite.from('https://cdn-icons-png.flaticon.com/512/6166/6166814.png');
-      app.stage.addChild(sprite);
-
-      // Add a ticker callback to move the sprite back and forth
-      let elapsed = 0.0;
-      app.ticker.add((delta) => {
-        elapsed += delta;
-        sprite.x = 100.0 + Math.cos(elapsed/50.0) * 100.0;
-      });
+      app.renderer.view.onmousedown = function (e) {
+            console.log(e)
+            socket.emit('player:navigate', {
+                x: e.x,
+                y: e.y
+            })
+        }
     </script>
+
   </body>
 </html>
